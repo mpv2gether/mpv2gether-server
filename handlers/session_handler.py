@@ -1,6 +1,4 @@
-import asyncio
 from random import choice
-from api import send_json
 from constants import message_types, error_types
 
 sessions = {}
@@ -13,7 +11,7 @@ async def create(ws, message):
     try:
         nick = message["nick"]
     except KeyError:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.missing_key, "error":"Missing key: nick"})
+        await message_types.Error(error_type=error_types.missing_key, error="Missing key: nick").send(ws)
         return
     session_key = await generate_key()
     user = MPV2GetherUser(nick, ws)
@@ -21,43 +19,45 @@ async def create(ws, message):
     user.set_session(session)
     sessions[session_key] = session
     users[ws] = user
-    await send_json(target=ws, type=message_types.created_session, data={"nick":nick, "session_key":session_key})
+    await message_types.CreatedSession(sender=ws, session_key=session_key).send(ws)
 
 async def join(ws, message):
     if ws in users:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.in_another_session, "error":"You're in another session, consider leaving it first: {}".format(users[ws].session.key)})
+        await message_types.Error(error_type=error_types.in_another_session, error="You're in another session, consider leaving it first: {}".format(users[ws].session.key)).send(ws)
         return
     try:
         session_key = message["session_key"]
     except KeyError:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.missing_key, "error":"Missing key: session_key"})
+        await message_types.Error(error_type=error_types.missing_key, error="Missing key: session_key").send(ws)
         return
     try:
         nick = message["nick"]
     except KeyError:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.missing_key, "error":"Missing key: nick"})
+        await message_types.Error(error_type=error_types.missing_key, error="Missing key: nick").send(ws)
         return
     if session_key not in sessions:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.invalid_key, "error":"Not a session_key: {}".format(session_key)})
+        await message_types.Error(error_type=error_types.invalid_key, error="Not a session_key: {}".format(session_key)).send(ws)
         return
     session = sessions[session_key]
     if True in [x.nick == nick for x in session.users]:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.nick_taken, "error":"This nick is already taken: {}".format(nick)})
+        await message_types.Error(error_type=error_types.nick_taken, error="This nick is already taken: {}".format(nick)).send(ws)
         return
     user = MPV2GetherUser(nick, ws)
     session.add_user(user)
     user.set_session(session)
     users[ws] = user
     for x in session.users:
-        await send_json(target=x.ws, type=message_types.user_joined, data={"nick":nick})
+        await message_types.UserJoined(sender=ws).send(x.ws)
 
 async def leave(ws, message):
     if not ws in users:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.not_in_session, "error":"You're not in a session, so you can't leave."})
+        await message_types.Error(error_type=error_types.not_in_session, error="You're not in a session, so you can't leave.").send(ws)
         return
-    sessions[users[ws].session.key].remove_user(ws)
+    session = users[ws].session
+    for x in session.users:
+        await message_types.UserLeft(sender=ws).send(x.ws)
+    session.remove_user(ws)
     users.pop(ws)
-    await send_json(target=ws, type=message_types.left_session, data={})
 
 charpool = "ABCDEFGHIJKLMNOPQRSTUVWJYZabcdefghijklmnopqrstuvwxyz0123456789"
 async def generate_key():

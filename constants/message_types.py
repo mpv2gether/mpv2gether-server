@@ -1,5 +1,4 @@
 import handlers.session_handler as session_handler
-import asyncio
 import json
 
 class Message():

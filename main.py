@@ -4,7 +4,6 @@ import json
 from constants import message_types, error_types
 import handlers.session_handler as session_handler
 import handlers.message_handler as message_handler
-from api import send_json
 
 connections = []
 
