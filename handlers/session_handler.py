@@ -8,7 +8,7 @@ users = {}
 
 async def create(ws, message):
     if ws in users:
-        await send_json(target=ws, type=message_types.error, data={"error_type":error_types.in_another_session, "error":"You're in another session, consider leaving it first: {}".format(users[ws].session.key)})
+        await message_types.Error(error_type=error_types.in_another_session, error="You're in another session, consider leaving it first: {}".format(users[ws].session.key)).send(ws)
         return
     try:
         nick = message["nick"]
