@@ -1,6 +1,22 @@
 import handlers.session_handler as session_handler
 import json
 
+# all message types
+message_types = {
+    #server
+    "error",
+    "created_session",
+    "user_joined",
+    "user_left",
+    #client
+    "create_session",
+    "join_session",
+    "leave_session",
+    #both
+    "message"
+}
+
+# classes for server-side messages
 class Message():
     def __init__(self, type, **args):
         self.type = type
@@ -29,29 +45,8 @@ class CreatedSession(Message):
     def __init__(self, session_key, sender):
         Message.__init__(self, "created_session", session_key=session_key, nick=session_handler.users[sender].nick)
 
-
-message_types = {
-    #server
-    "error",
-    "created_session",
-    "user_joined",
-    "left_session",
-    #client
-    "create_session",
-    "join_session",
-    "leave_session",
-    #both
-    "message"
-}
-
-#server
-error = "error"
-created_session = "created_session"
-user_joined = "user_joined"
-left_session = "left_session"
-#client
-create_session = "create_session"
-join_session = "join_session"
-leave_session = "leave_session"
-#both
-message = "message"
+# variables for client-size ones
+create_session    = "create_session"
+join_session      = "join_session"
+leave_session     = "leave_session"
+message           = "message"

@@ -1,5 +1,6 @@
 from random import choice
 from constants import message_types, error_types
+from helpers.parse_helper import get_key, MissingKeyError
 
 sessions = {}
 users = {}
@@ -9,9 +10,9 @@ async def create(ws, message):
         await message_types.Error(error_type=error_types.in_another_session, error="You're in another session, consider leaving it first: {}".format(users[ws].session.key)).send(ws)
         return
     try:
-        nick = message["nick"]
-    except KeyError:
-        await message_types.Error(error_type=error_types.missing_key, error="Missing key: nick").send(ws)
+        nick = get_key(message, "nick")
+    except MissingKeyError as e:
+        await message_types.Error(error_type=error_types.missing_key, error=str(e)).send(ws)
         return
     session_key = await generate_key()
     user = MPV2GetherUser(nick, ws)
@@ -26,20 +27,16 @@ async def join(ws, message):
         await message_types.Error(error_type=error_types.in_another_session, error="You're in another session, consider leaving it first: {}".format(users[ws].session.key)).send(ws)
         return
     try:
-        session_key = message["session_key"]
-    except KeyError:
-        await message_types.Error(error_type=error_types.missing_key, error="Missing key: session_key").send(ws)
-        return
-    try:
-        nick = message["nick"]
-    except KeyError:
-        await message_types.Error(error_type=error_types.missing_key, error="Missing key: nick").send(ws)
+        session_key = get_key(message, "session_key")
+        nick = get_key(message, "nick")
+    except MissingKeyError as e:
+        await message_types.Error(error_type=error_types.missing_key, error=str(e)).send(ws)
         return
     if session_key not in sessions:
         await message_types.Error(error_type=error_types.invalid_key, error="Not a session_key: {}".format(session_key)).send(ws)
         return
     session = sessions[session_key]
-    if True in [x.nick == nick for x in session.users]:
+    if any([x.nick == nick for x in session.users]):
         await message_types.Error(error_type=error_types.nick_taken, error="This nick is already taken: {}".format(nick)).send(ws)
         return
     user = MPV2GetherUser(nick, ws)
