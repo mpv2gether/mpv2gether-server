@@ -27,7 +27,7 @@ class Message():
 
 class TMessage(Message):
     def __init__(self, message, sender):
-        Message.__init__(self, "message", message=message, nick=session_handler.users[sender].nick)
+        Message.__init__(self, "message", nick=session_handler.users[sender].nick, message=message)
 
 class UserJoined(Message):
     def __init__(self, sender):
@@ -43,7 +43,7 @@ class Error(Message):
 
 class CreatedSession(Message):
     def __init__(self, session_key, sender):
-        Message.__init__(self, "created_session", session_key=session_key, nick=session_handler.users[sender].nick)
+        Message.__init__(self, "created_session", nick=session_handler.users[sender].nick, session_key=session_key)
 
 # variables for client-size ones
 create_session    = "create_session"
