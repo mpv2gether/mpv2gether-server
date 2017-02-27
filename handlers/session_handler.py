@@ -38,7 +38,7 @@ async def join(ws, message):
         await message_types.Error(error_type=error_types.invalid_session_key, error="Not a session_key: {}".format(session_key)).send(ws)
         return
     session = sessions[session_key]
-    if any([x.nick == nick for x in session.users]):
+    if any(x.nick == nick for x in session.users):
         await message_types.Error(error_type=error_types.nick_taken, error="This nick is already taken: {}".format(nick)).send(ws)
         return
     user = MPV2GetherUser(nick, ws)
