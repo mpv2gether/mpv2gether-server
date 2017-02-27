@@ -1,5 +1,5 @@
 import handlers.session_handler as session_handler
-import json
+import json, websockets
 
 # all message types
 message_types = {
@@ -22,8 +22,13 @@ class Message():
         self.type = type
         vars(self).update(args)
     async def send(self, ws):
-        r_json = json.dumps(vars(self))
-        await ws.send(r_json)
+        message = vars(self).copy()
+        message.pop("type")
+        r_json = json.dumps({"type":self.type, "message":message})
+        try:
+            await ws.send(r_json)
+        except websockets.exceptions.ConnectionClosed:
+            await session_handler.leave(ws)
 
 class TMessage(Message):
     def __init__(self, message, sender):

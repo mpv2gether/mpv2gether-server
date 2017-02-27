@@ -1,6 +1,6 @@
 def get_key(message, key):
-    if key in message:
-        return message[key]
+    if "message" in message and key in message["message"]:
+        return message["message"][key]
     raise MissingKeyError(key)
 
 class MissingKeyError(Exception):
