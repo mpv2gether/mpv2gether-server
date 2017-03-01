@@ -8,6 +8,7 @@ message_types = [
     "created_session",
     "user_joined",
     "user_left",
+    "session_info",
     #client
     "create_session",
     "join_session",
