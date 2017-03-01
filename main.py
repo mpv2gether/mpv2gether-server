@@ -4,12 +4,10 @@ import json
 from constants import message_types, error_types
 import handlers.session_handler as session_handler
 import handlers.message_handler as message_handler
-
-connections = []
+import handlers.video_handler as video_handler
 
 
 async def main(websocket, path):
-    connections.append(websocket)
     while True:
         try:
             message = await websocket.recv()
@@ -32,7 +30,9 @@ async def main(websocket, path):
             message_types.create_session: session_handler.create,
             message_types.join_session: session_handler.join,
             message_types.leave_session: session_handler.leave,
-            message_types.message: message_handler.message
+            message_types.message: message_handler.message,
+            message_types.load_video: video_handler.load,
+            
         }[message["type"]](websocket, message)
 
 start_server = websockets.serve(main, 'localhost', 8765)

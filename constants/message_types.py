@@ -2,7 +2,7 @@ import handlers.session_handler as session_handler
 import json, websockets
 
 # all message types
-message_types = {
+message_types = [
     #server
     "error",
     "created_session",
@@ -13,8 +13,10 @@ message_types = {
     "join_session",
     "leave_session",
     #both
-    "message"
-}
+    "message",
+    "load_video",
+    "video_status"
+]
 
 # classes for server-side messages
 class Message():
@@ -50,8 +52,22 @@ class CreatedSession(Message):
     def __init__(self, session_key, sender):
         Message.__init__(self, "created_session", nick=session_handler.users[sender].nick, session_key=session_key)
 
+class LoadVideo(Message):
+    def __init__(self, video, sender):
+        Message.__init__(self, "load_video", nick=session_handler.users[sender].nick, video=video)
+
+class VideoStatus(Message):
+    def __init__(self, playing, sender):
+        Message.__init__(self, "video_status", nick=session_handler.users[sender].nick, playing=playing)
+
+class SessionInfo(Message):
+    def __init__(self, session):
+        Message.__init__(self, "session_info", users=[x.nick for x in session.users], video=session.video, playing=session.playing)
+
 # variables for client-size ones
 create_session    = "create_session"
 join_session      = "join_session"
 leave_session     = "leave_session"
 message           = "message"
+load_video        = "load_video"
+video_status      = "video_status"

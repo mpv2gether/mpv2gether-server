@@ -46,6 +46,9 @@ async def join(ws, message):
     user.set_session(session)
     users[ws] = user
     for x in session.users:
+        if x == user:
+            await message_types.SessionInfo(session).send(ws)
+            return
         await message_types.UserJoined(sender=ws).send(x.ws)
 
 
@@ -84,6 +87,8 @@ class MPV2GetherSession():
         self.creator = creator
         self.key = key
         self.users = [self.creator]
+        self.video = None
+        self.playing = False
 
     def add_user(self, user):
         self.users.append(user)
