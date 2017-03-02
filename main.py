@@ -32,7 +32,7 @@ async def main(websocket, path):
             message_types.leave_session: session_handler.leave,
             message_types.message: message_handler.message,
             message_types.load_video: video_handler.load,
-            
+            message_types.video_status: video_handler.status
         }[message["type"]](websocket, message)
 
 start_server = websockets.serve(main, 'localhost', 8765)
